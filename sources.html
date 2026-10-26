@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sources — Thermomètre</title>
+  <meta name="description" content="Toutes les sources des chiffres et des données en direct du site Thermomètre.">
+  <meta name="theme-color" content="#07090d">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='4' height='16' fill='%232171b5'/%3E%3Crect x='4' width='4' height='16' fill='%23c6dbef'/%3E%3Crect x='8' width='4' height='16' fill='%23fb6a4a'/%3E%3Crect x='12' width='4' height='16' fill='%2367000d'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="css/main.css">
+  <script type="module" src="js/sources.js"></script>
+</head>
+<body class="page-sources">
+  <nav class="chapnav" aria-label="Navigation">
+    <ul>
+      <li><a href="index.html">← Retour au site</a></li>
+      <li><a href="#chiffres">Chiffres de fond</a></li>
+      <li><a href="#api">Données en direct</a></li>
+      <li><a href="#methode">Méthode</a></li>
+    </ul>
+  </nav>
+  <main>
+    <section class="chapter" id="chiffres">
+      <div class="chapter-head">
+        <span class="chapter-num">SRC</span>
+        <h1>Sources &amp; méthode</h1>
+        <p class="lede">Chaque chiffre affiché sur le site renvoie ici. Les chiffres de fond sont regroupés dans <code>data/static.js</code> (mis à jour le <span id="updated"></span>) ; chacun est rattaché à un rapport officiel daté.</p>
+      </div>
+      <ol id="source-list" class="source-list"></ol>
+    </section>
+
+    <section class="chapter" id="api">
+      <div class="chapter-head">
+        <h2>Données en direct (API)</h2>
+        <p class="lede">Appelées depuis votre navigateur à chaque visite, sans clé ni compte. ✔ = testée le 26/10/2026 ; ◐ = CORS vérifié, réponse limitée pendant le test (quota partagé) ; ○ = écrite d'après la documentation officielle, non testée.</p>
+      </div>
+      <div class="card wide table-scroll">
+        <table class="api-table">
+          <thead><tr><th scope="col">API</th><th scope="col">Apport</th><th scope="col">Test</th></tr></thead>
+          <tbody id="api-list"></tbody>
+        </table>
+      </div>
+      <p class="muted small">Le détail (URL exactes, API écartées et raisons) figure dans <a href="https://github.com/Thekilleurdu3411/TEMPNOW/blob/main/API.md">API.md</a>.</p>
+    </section>
+
+    <section class="chapter" id="methode">
+      <div class="chapter-head">
+        <h2>Méthode</h2>
+      </div>
+      <div class="card wide">
+        <ul>
+          <li><strong>Compteurs « depuis l'ouverture »</strong> : débit annuel du dernier bilan publié, ramené à la seconde (ex. 42,2 Gt de CO₂ par an ÷ 31 557 600 s). Ce sont des ordres de grandeur, pas des mesures.</li>
+          <li><strong>Bandes de réchauffement</strong> : moyenne annuelle (années complètes) ; couleur selon l'écart à une période de référence (1951-1980 pour la série mondiale NASA, 1961-1990 pour les villes), palette ColorBrewer RdBu d'après Ed Hawkins.</li>
+          <li><strong>Températures de référence</strong> : Copernicus et l'OMM comparent à 1850-1900 (« préindustriel ») ; la NASA à 1951-1980 ; Météo-France à 1991-2020. Les valeurs ne sont donc pas directement comparables entre elles.</li>
+          <li><strong>Mortalité</strong> : les décès « attribuables » (chaleur, pollution) sont des estimations épidémiologiques de surmortalité, pas des certificats de décès.</li>
+          <li><strong>Cache</strong> : les séries historiques lourdes sont conservées dans le stockage local du navigateur (12 h à 30 jours). Si une API ne répond pas, la dernière valeur en cache est affichée et signalée comme telle.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><p><a href="index.html">← Retour au thermomètre</a></p></footer>
+</body>
+</html>

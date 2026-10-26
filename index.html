@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Thermomètre — le réchauffement climatique en direct</title>
+  <meta name="description" content="Observatoire du réchauffement climatique en direct : températures, CO₂, océans, glaces, séismes et catastrophes, météo et qualité de l'air de 24 villes dont Périgueux, rivières, énergie, santé et mortalité. Chiffres sourcés 2025-2026.">
+  <meta name="theme-color" content="#07090d">
+  <meta property="og:title" content="Thermomètre — le climat en direct">
+  <meta property="og:description" content="Toutes les statistiques du réchauffement climatique, en direct et sourcées.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='4' height='16' fill='%232171b5'/%3E%3Crect x='4' width='4' height='16' fill='%23c6dbef'/%3E%3Crect x='8' width='4' height='16' fill='%23fb6a4a'/%3E%3Crect x='12' width='4' height='16' fill='%2367000d'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+  <link rel="preconnect" href="https://global-warming.org" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="css/main.css">
+
+  <!-- Bibliothèques (versions figées, intégrité SRI) — voir README -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js" integrity="sha384-DsT1q/+aTIkNUICSMoPHLh8RDdgN2BaPm3ThHPGAuETCIdf1vPGwFsoMy/SrKZ7W" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div class="read-progress" aria-hidden="true"></div>
+  <a class="skip" href="#contenu">Aller au contenu</a>
+
+  <!-- ================= OUVERTURE ================= -->
+  <header class="hero" id="ouverture">
+    <div class="hero-stripes-wrap">
+      <canvas id="hero-stripes" class="hero-stripes" aria-label="Bandes de réchauffement : température moyenne mondiale de chaque année depuis 1880, du bleu (froid) au rouge (chaud)" role="img"></canvas>
+      <div id="hero-tip" class="stripe-tip" hidden></div>
+      <div class="hero-years" aria-hidden="true"><span id="hero-y0">1880</span><span id="hero-y1"></span></div>
+    </div>
+    <div class="hero-content">
+      <p class="kicker"><span class="rec" aria-hidden="true"></span> Observatoire du climat · données en direct</p>
+      <h1>Le thermomètre<br>de la planète</h1>
+      <p class="hero-key-wrap">
+        <span class="hero-key" id="hero-key">+1,47°C</span>
+        <span class="hero-key-label">En 2025, la Terre était 1,47 °C plus chaude qu'avant l'ère industrielle.
+          <a class="src" href="sources.html#c3s_gch2025">Copernicus · janv. 2026</a></span>
+      </p>
+      <div class="live compact" id="hero-live">
+        <div class="live-body"><p id="hero-last" class="hero-last">Chargement de la dernière mesure…</p></div>
+      </div>
+      <div class="hero-actions">
+        <a class="btn primary" href="#compteurs">Explorer les données</a>
+        <button type="button" class="btn ghost" data-replay>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+          Rejouer les animations
+        </button>
+      </div>
+      <p class="hero-hint">Chaque bande = une année (1880 → aujourd'hui). Touchez-les pour lire la valeur.</p>
+    </div>
+  </header>
+
+  <!-- ================= NAVIGATION ================= -->
+  <nav class="chapnav" aria-label="Chapitres">
+    <ul>
+      <li><a href="#compteurs">Compteurs</a></li>
+      <li><a href="#temperatures">Températures</a></li>
+      <li><a href="#gaz">CO₂ &amp; gaz</a></li>
+      <li><a href="#oceans">Océans</a></li>
+      <li><a href="#glaces">Glaces</a></li>
+      <li><a href="#catastrophes">Catastrophes</a></li>
+      <li><a href="#meteo">Météo &amp; air</a></li>
+      <li><a href="#rivieres">Rivières</a></li>
+      <li><a href="#energie">Énergie</a></li>
+      <li><a href="#sante">Santé</a></li>
+      <li><a href="#france">France &amp; Europe</a></li>
+      <li><a href="sources.html">Sources</a></li>
+    </ul>
+    <button type="button" class="nav-replay" data-replay aria-label="Rejouer les animations" title="Rejouer les animations">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+    </button>
+  </nav>
+
+  <main id="contenu">
+
+    <!-- ================= 01 COMPTEURS ================= -->
+    <section class="chapter" id="compteurs" aria-labelledby="h-compteurs">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">01</span>
+        <h2 id="h-compteurs">Pendant que vous lisez</h2>
+        <p class="lede">Depuis que vous avez ouvert cette page il y a <strong class="mono"><span id="counters-elapsed">0</span> s</strong>, voici ce qui s'est passé dans le monde — estimations au prorata des derniers bilans annuels.</p>
+      </div>
+      <div id="counters-grid" class="counter-grid"></div>
+
+      <div class="split">
+        <article class="card budget" data-reveal>
+          <h3>Budget carbone restant pour +1,5 °C</h3>
+          <p class="budget-num"><span id="budget-left" class="mono">—</span> <small>Gt CO₂</small></p>
+          <div class="budget-track" aria-hidden="true"><div id="budget-bar" class="budget-bar"></div></div>
+          <p class="muted">170 Gt au 1er janvier 2025, consommés au rythme de 42,2 Gt par an : épuisé vers le <strong id="budget-end">—</strong>.
+            <a class="src" href="sources.html#gcp2025">Global Carbon Project · nov. 2025</a></p>
+        </article>
+        <article class="live card" id="co2-today">
+          <div class="live-head"><h3>CO₂ dans l'air aujourd'hui</h3><p class="live-desc">Mauna Loa (Hawaï), mesure quotidienne</p></div>
+          <div class="live-body">
+            <p class="big mono">—</p>
+            <p class="sub muted">—</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= 02 TEMPÉRATURES ================= -->
+    <section class="chapter" id="temperatures" aria-labelledby="h-temp">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">02</span>
+        <h2 id="h-temp">Températures &amp; records</h2>
+        <p class="lede">2023, 2024 et 2025 sont les trois années les plus chaudes jamais mesurées. Pour la première fois, une moyenne sur trois ans dépasse +1,5 °C, la limite fixée par l'Accord de Paris.</p>
+      </div>
+      <div data-stats="temperature"></div>
+
+      <article class="live card wide" id="global-temp">
+        <div class="live-head"><h3>Anomalie de température mondiale, mois par mois depuis 1880</h3><p class="live-desc">Terres + océans, écart à la moyenne 1951-1980 (NASA GISTEMP)</p></div>
+        <div class="live-body">
+          <div class="chart-box tall"><canvas aria-label="Courbe de l'anomalie de température mondiale mensuelle depuis 1880" role="img"></canvas></div>
+          <p class="chart-note muted"></p>
+        </div>
+      </article>
+
+      <article class="live card wide" id="local-stripes">
+        <div class="live-head">
+          <h3>Vos bandes de réchauffement : 1950 → aujourd'hui</h3>
+          <p class="live-desc">Température moyenne de chaque année dans la ville choisie</p>
+          <label class="select">Ville
+            <select id="stripes-city"></select>
+          </label>
+        </div>
+        <div class="live-body">
+          <div class="stripes-box">
+            <canvas class="local-stripes" role="img" aria-label="Bandes de réchauffement locales"></canvas>
+            <div class="stripe-tip" hidden></div>
+            <div class="hero-years"><span class="y0"></span><span class="y1"></span></div>
+          </div>
+          <p class="stripe-caption muted small"></p>
+          <ul class="stripe-facts facts"></ul>
+        </div>
+      </article>
+
+      <article class="card wide" data-reveal>
+        <h3>Et demain ? Réchauffement projeté en 2081-2100</h3>
+        <p class="muted">Selon le scénario d'émissions (du plus sobre, SSP1-1.9, au plus émetteur, SSP5-8.5). Barre : fourchette très probable ; segment orange : estimation centrale.</p>
+        <div class="chart-box"><canvas id="ar6-chart" role="img" aria-label="Projections de réchauffement du GIEC par scénario"></canvas></div>
+        <p id="ar6-src" class="small"></p>
+      </article>
+    </section>
+
+    <!-- ================= 03 GAZ ================= -->
+    <section class="chapter" id="gaz" aria-labelledby="h-gaz">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">03</span>
+        <h2 id="h-gaz">CO₂, méthane, protoxyde d'azote</h2>
+        <p class="lede">Jamais depuis au moins 2 millions d'années il n'y a eu autant de CO₂ dans l'atmosphère. Les émissions fossiles ont encore battu un record en 2025.</p>
+      </div>
+      <div data-stats="gases"></div>
+      <article class="live card wide" id="co2-chart">
+        <div class="live-head"><h3>CO₂ atmosphérique, mesure quotidienne</h3><p class="live-desc">Observatoire de Mauna Loa (NOAA), 10 dernières années</p></div>
+        <div class="live-body">
+          <div class="chart-box"><canvas role="img" aria-label="Concentration de CO₂ quotidienne"></canvas></div>
+          <p class="chart-note muted"></p>
+        </div>
+      </article>
+      <div class="split">
+        <article class="live card" id="ch4-chart">
+          <div class="live-head"><h3>Méthane (CH₄)</h3><p class="live-desc">Moyenne mondiale mensuelle (NOAA)</p></div>
+          <div class="live-body"><div class="chart-box short"><canvas role="img" aria-label="Concentration de méthane"></canvas></div><p class="chart-note muted"></p></div>
+        </article>
+        <article class="live card" id="n2o-chart">
+          <div class="live-head"><h3>Protoxyde d'azote (N₂O)</h3><p class="live-desc">Moyenne mondiale mensuelle (NOAA)</p></div>
+          <div class="live-body"><div class="chart-box short"><canvas role="img" aria-label="Concentration de protoxyde d'azote"></canvas></div><p class="chart-note muted"></p></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= 04 OCÉANS ================= -->
+    <section class="chapter" id="oceans" aria-labelledby="h-oceans">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">04</span>
+        <h2 id="h-oceans">Océans : chaleur, montée des eaux, acidité</h2>
+        <p class="lede">L'océan absorbe plus de 90 % de l'excès de chaleur. Son contenu thermique bat des records chaque année, et la montée des mers accélère.</p>
+      </div>
+      <div data-stats="oceans"></div>
+      <article class="live card wide" id="ocean-chart">
+        <div class="live-head"><h3>Température de surface des océans, année par année</h3><p class="live-desc">Écart à la moyenne du XXe siècle (NOAA NCEI)</p></div>
+        <div class="live-body"><div class="chart-box"><canvas role="img" aria-label="Anomalie annuelle de température des océans"></canvas></div><p class="chart-note muted"></p></div>
+      </article>
+      <div class="split">
+        <article class="live card" id="sst-live">
+          <div class="live-head"><h3>La mer, maintenant</h3><p class="live-desc">Température de surface de 12 points chauds de l'océan</p></div>
+          <div class="live-body"><ul class="sst-list"></ul></div>
+        </article>
+        <article class="live card" id="tide-live">
+          <div class="live-head"><h3>Niveau de l'eau à New York</h3><p class="live-desc">Marégraphe de The Battery, 48 dernières heures</p></div>
+          <div class="live-body"><div class="chart-box short"><canvas role="img" aria-label="Niveau d'eau observé et marée prédite à New York"></canvas></div><p class="chart-note muted small"></p></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= 05 GLACES ================= -->
+    <section class="chapter" id="glaces" aria-labelledby="h-glaces">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">05</span>
+        <h2 id="h-glaces">Banquise, glaciers, calottes</h2>
+        <p class="lede">En 2025, l'Arctique a connu son plus faible maximum hivernal jamais observé. Les glaciers du monde ont perdu plus de 400 milliards de tonnes de glace.</p>
+      </div>
+      <div data-stats="ice"></div>
+      <article class="live card wide" id="seaice-chart">
+        <div class="live-head"><h3>Banquise mondiale (Arctique + Antarctique)</h3><p class="live-desc">Anomalie d'étendue mensuelle depuis 1979, par satellite (NSIDC)</p></div>
+        <div class="live-body"><div class="chart-box"><canvas role="img" aria-label="Anomalie d'étendue de la banquise mondiale"></canvas></div><p class="chart-note muted"></p></div>
+      </article>
+    </section>
+
+    <!-- ================= 06 CATASTROPHES ================= -->
+    <section class="chapter" id="catastrophes" aria-labelledby="h-cata">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">06</span>
+        <h2 id="h-cata">Catastrophes &amp; extrêmes, en direct</h2>
+        <p class="lede">Séismes de la semaine, feux, tempêtes, volcans et alertes humanitaires en cours. Touchez un point pour le détail ; utilisez le bouton de calques pour afficher la température des villes.</p>
+      </div>
+      <div class="map-wrap" data-reveal>
+        <div id="disaster-map" class="map" role="region" aria-label="Carte mondiale des événements en cours"></div>
+        <ul class="map-legend small" aria-hidden="true">
+          <li><i class="lg q"></i>Séisme (24 h en jaune)</li>
+          <li><i class="lg g"></i>Alerte GDACS (vert / orange / rouge)</li>
+          <li>🔥 Feu · 🌀 Tempête · 🌋 Volcan · 🧊 Glace</li>
+        </ul>
+      </div>
+      <div class="tri">
+        <article class="live card" id="quakes-live">
+          <div class="live-head"><h3>Séismes M ≥ 4,5 (7 jours)</h3></div>
+          <div class="live-body"><div class="kpis"></div><ol class="event-list"></ol></div>
+        </article>
+        <article class="live card" id="eonet-live">
+          <div class="live-head"><h3>Événements naturels ouverts</h3><p class="live-desc"><strong class="total mono">—</strong> suivis par satellite (60 jours)</p></div>
+          <div class="live-body"><ul class="cat-list"></ul></div>
+        </article>
+        <article class="live card" id="gdacs-live">
+          <div class="live-head"><h3>Alertes catastrophes (GDACS)</h3></div>
+          <div class="live-body"><div class="kpis"></div><ul class="event-list"></ul></div>
+        </article>
+      </div>
+
+      <h3 class="sub-head" data-reveal>Le bilan 2025</h3>
+      <div data-stats="disasters"></div>
+      <div class="tri">
+        <article class="card" data-reveal>
+          <h3>Pertes par région, 2025</h3>
+          <div class="chart-box short"><canvas id="losses-region" role="img" aria-label="Pertes par région"></canvas></div>
+          <p class="small" data-src-of="disasterLossesByRegion"></p>
+        </article>
+        <article class="card" data-reveal>
+          <h3>2025 vs 2024</h3>
+          <div class="chart-box short"><canvas id="losses-years" role="img" aria-label="Pertes 2024 et 2025"></canvas></div>
+          <p class="small" data-src-of="disasterLossesYears"></p>
+        </article>
+        <article class="card" data-reveal>
+          <h3>Morts dans les catastrophes</h3>
+          <div class="chart-box short"><canvas id="disaster-deaths" role="img" aria-label="Morts dans les catastrophes naturelles"></canvas></div>
+          <p class="small" data-src-of="disasterDeaths"></p>
+        </article>
+      </div>
+      <h3 class="sub-head" data-reveal>Cyclones, feux, sécheresses</h3>
+      <div data-stats="extremes"></div>
+    </section>
+
+    <!-- ================= 07 MÉTÉO & AIR ================= -->
+    <section class="chapter" id="meteo" aria-labelledby="h-meteo">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">07</span>
+        <h2 id="h-meteo">Météo &amp; air de 24 villes</h2>
+        <p class="lede">De Périgueux à Delhi : la température, la chaleur à venir et l'air que l'on respire, en ce moment.</p>
+      </div>
+      <article class="live card wide" id="cities-live">
+        <div class="live-head"><h3>Conditions actuelles</h3></div>
+        <div class="live-body"><div class="city-grid"></div><p class="chart-note muted small"></p></div>
+      </article>
+      <article class="live card wide" id="heat-live">
+        <div class="live-head"><h3>Vagues de chaleur : les 7 prochains jours</h3><p class="live-desc">Températures maximales prévues ; en rouge, ≥ 3 jours à 35 °C ou plus. « Nuit tropicale » : minimale ≥ 20 °C.</p></div>
+        <div class="live-body">
+          <div class="table-scroll">
+            <table class="heat-table">
+              <thead><tr><th scope="col">Ville</th><th scope="col">7 jours</th><th scope="col">Max</th><th scope="col">Canicule</th><th scope="col">Nuits trop.</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="chart-note muted small"></p>
+        </div>
+      </article>
+      <div class="split">
+        <article class="live card" id="air-live">
+          <div class="live-head"><h3>Qualité de l'air</h3><p class="live-desc">Classement par particules fines PM2,5 (µg/m³). Badge : multiple du seuil journalier de l'OMS (15 µg/m³, <a class="src" href="sources.html#who_air">OMS · 2021</a>), à titre indicatif.</p></div>
+          <div class="live-body">
+            <div class="table-scroll">
+              <table class="air-table">
+                <thead><tr><th scope="col">Ville</th><th scope="col">Indice EU</th><th scope="col">PM2,5</th><th scope="col" class="opt">PM10</th><th scope="col" class="opt">NO₂</th><th scope="col" class="opt">O₃</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+        <article class="live card" id="nws-live">
+          <div class="live-head"><h3>Alertes chaleur aux États-Unis</h3><p class="live-desc">Avis et avertissements actifs du National Weather Service</p></div>
+          <div class="live-body"><p class="big mono nws-count">—</p><ul class="event-list"></ul></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= 08 RIVIÈRES ================= -->
+    <section class="chapter" id="rivieres" aria-labelledby="h-riv">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">08</span>
+        <h2 id="h-riv">Rivières : crues &amp; étiages</h2>
+        <p class="lede">Le réchauffement intensifie le cycle de l'eau : des pluies plus violentes, des sécheresses plus longues. Les débits en direct le montrent.</p>
+      </div>
+      <article class="live card wide" id="isle-live">
+        <div class="live-head"><h3>L'Isle à Périgueux, 7 derniers jours</h3><p class="live-desc">Station hydrométrique P704151001 (réseau Vigicrues)</p></div>
+        <div class="live-body"><div class="kpis"></div><div class="chart-box"><canvas role="img" aria-label="Débit et hauteur de l'Isle à Périgueux"></canvas></div></div>
+      </article>
+      <article class="live card wide" id="rivers-live">
+        <div class="live-head"><h3>Grands fleuves : 60 jours passés + 30 jours prévus</h3><p class="live-desc">Débit modélisé (GloFAS). Zone grisée : prévision. Rouge : plus de 150 % de la moyenne récente ; bleu : moins de 60 %.</p></div>
+        <div class="live-body"><div class="river-grid"></div></div>
+      </article>
+    </section>
+
+    <!-- ================= 09 ÉNERGIE ================= -->
+    <section class="chapter" id="energie" aria-labelledby="h-nrj">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">09</span>
+        <h2 id="h-nrj">Énergie &amp; intensité carbone</h2>
+        <p class="lede">Combien de CO₂ émet un kilowattheure d'électricité, en ce moment ? La réponse change d'heure en heure selon le vent, le soleil et les centrales en marche.</p>
+      </div>
+      <div class="split">
+        <article class="live card" id="eco2mix-live">
+          <div class="live-head"><h3>France</h3><p class="live-desc">Production électrique et taux de CO₂ (RTE éCO2mix, 24 h)</p></div>
+          <div class="live-body"><div class="kpis"></div><div class="chart-box short mix"><canvas role="img" aria-label="Mix électrique France"></canvas></div><div class="chart-box short trend"><canvas role="img" aria-label="Intensité carbone France sur 24 h"></canvas></div></div>
+        </article>
+        <article class="live card" id="uk-live">
+          <div class="live-head"><h3>Grande-Bretagne</h3><p class="live-desc">Mix et intensité carbone (National Grid ESO, aujourd'hui)</p></div>
+          <div class="live-body"><div class="kpis"></div><div class="chart-box short mix"><canvas role="img" aria-label="Mix électrique Grande-Bretagne"></canvas></div><div class="chart-box short trend"><canvas role="img" aria-label="Intensité carbone Grande-Bretagne"></canvas></div></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= 10 SANTÉ ================= -->
+    <section class="chapter" id="sante" aria-labelledby="h-sante">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">10</span>
+        <h2 id="h-sante">Santé &amp; mortalité</h2>
+        <p class="lede">Chaleur, air pollué par les énergies fossiles, fumées d'incendies, moustiques qui gagnent du terrain, récoltes perdues : le climat est d'abord une question de santé.</p>
+      </div>
+      <div data-stats="health"></div>
+      <div class="split">
+        <article class="card" data-reveal>
+          <h3>Décès annuels par cause liée au climat ou à l'énergie</h3>
+          <p class="muted small">Échelle logarithmique. Paludisme et dengue : maladies sensibles au climat (tous les décès ne lui sont pas attribuables).</p>
+          <div class="chart-box"><canvas id="health-cause" role="img" aria-label="Décès annuels par cause"></canvas></div>
+          <p class="small" data-src-of="healthByCause"></p>
+        </article>
+        <article class="live card" id="perigueux-health">
+          <div class="live-head"><h3>Périgueux : expositions du jour</h3><p class="live-desc">Air, UV et pollens (prévision Copernicus CAMS)</p></div>
+          <div class="live-body"><ul class="exposure facts"></ul></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= 11 FRANCE & EUROPE ================= -->
+    <section class="chapter" id="france" aria-labelledby="h-fr">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">11</span>
+        <h2 id="h-fr">Focus France &amp; Europe</h2>
+        <p class="lede">L'Europe est le continent qui se réchauffe le plus vite. En 2025, l'Union européenne a connu sa pire saison de feux jamais enregistrée, et la France plus de 5 700 morts liés à la chaleur.</p>
+      </div>
+      <div data-stats="france"></div>
+      <div class="tri">
+        <article class="card" data-reveal>
+          <h3>Décès liés à la chaleur par région, été 2025</h3>
+          <div class="chart-box"><canvas id="fr-regions" role="img" aria-label="Décès liés à la chaleur par région en France"></canvas></div>
+          <p class="small" data-src-of="franceRegionsHeat2025"></p>
+        </article>
+        <article class="card" data-reveal>
+          <h3>Europe : morts de la chaleur par été</h3>
+          <div class="chart-box"><canvas id="eu-heat" role="img" aria-label="Décès liés à la chaleur en Europe"></canvas></div>
+          <p class="small" data-src-of="europeHeatDeaths"></p>
+        </article>
+        <article class="card" data-reveal>
+          <h3>Surfaces brûlées dans l'UE, 2025</h3>
+          <div class="chart-box"><canvas id="eu-fires" role="img" aria-label="Répartition des surfaces brûlées"></canvas></div>
+          <p class="small" data-src-of="euFires2025"></p>
+        </article>
+      </div>
+      <article class="live card wide" id="perigueux-proj">
+        <div class="live-head"><h3>Périgueux en 2050 : jours de forte chaleur</h3><p class="live-desc">Simulation climatique haute résolution (1950-2050). Couleur des barres : écart de la température maximale annuelle à 1961-1990. Projection d'un seul modèle : ordre de grandeur, pas prévision.</p></div>
+        <div class="live-body"><div class="chart-box"><canvas role="img" aria-label="Nombre de jours à 30 °C et 35 °C par an à Périgueux, 1950-2050"></canvas></div><ul class="stripe-facts facts"></ul></div>
+      </article>
+    </section>
+
+    <!-- ================= 12 SOURCES ================= -->
+    <section class="chapter" id="sources" aria-labelledby="h-src">
+      <div class="chapter-head" data-reveal>
+        <span class="chapter-num">12</span>
+        <h2 id="h-src">Sources &amp; méthode</h2>
+        <p class="lede">Les blocs marqués « En direct » sont rechargés dans votre navigateur à chaque visite, directement auprès des organismes producteurs. Les autres chiffres proviennent des derniers rapports officiels (2025-2026), tous datés et référencés.</p>
+      </div>
+      <div class="card wide" data-reveal>
+        <p><a class="btn primary" href="sources.html">Voir toutes les sources et les API utilisées →</a></p>
+        <p class="muted small">Les données en direct sont mises en cache localement uniquement pour les séries historiques lourdes (12 h à 30 jours) ; le bouton « Actualiser » de chaque bloc force un nouveau relevé. Aucune donnée personnelle n'est collectée.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Thermomètre · site open source hébergé sur GitHub Pages · <span id="year">2026</span></p>
+    <p class="muted small">Données : Copernicus, OMM, NOAA, NASA, NSIDC, USGS, GDACS, Open-Meteo, Hub'eau, RTE, National Grid ESO, OMS, Lancet Countdown, Santé publique France, Météo-France, Munich Re, EM-DAT… <a href="sources.html">Détail des sources</a>.</p>
+  </footer>
+</body>
+</html>
